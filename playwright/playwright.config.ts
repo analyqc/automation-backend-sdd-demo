@@ -1,23 +1,40 @@
+import path from 'path';
+import { config as loadEnv } from 'dotenv';
 import { defineConfig } from '@playwright/test';
+import { getActiveEnv, resolvePlaywrightBaseURL } from './src/config/environments';
+
+loadEnv({ path: path.join(__dirname, '.env') });
+
+const debugHttp = process.env.DEBUG_API === '1' || process.env.PW_HTTP_LOG === '1';
 
 export default defineConfig({
   testDir: './tests',
-  // Petstore es API pública compartida: en paralelo los GET pueden cruzarse con otras creaciones.
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: [
     ['list'],
-    ['html', { open: 'never', outputFolder: 'playwright-report' }],
+    [
+      'html',
+      {
+        open: 'never',
+        outputFolder: 'playwright-report',
+      },
+    ],
     ['junit', { outputFile: 'results/e2e-junit.xml' }],
   ],
+  metadata: {
+    'TEST_ENV': getActiveEnv(),
+    'DEBUG_HTTP': debugHttp ? 'on' : 'off',
+    'API_BASE_URL': resolvePlaywrightBaseURL(),
+  },
   use: {
-    // Barra final: rutas relativas tipo "pet" se resuelven bajo /v2/ ("/pet" reemplazaría el path y rompe el prefijo).
-    baseURL: (process.env.API_BASE_URL ?? 'https://petstore.swagger.io/v2').replace(/\/?$/, '/'),
+    baseURL: resolvePlaywrightBaseURL(),
     extraHTTPHeaders: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
     },
+    trace: debugHttp ? 'on' : 'retain-on-failure',
   },
 });

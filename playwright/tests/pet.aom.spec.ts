@@ -2,7 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { test, expect } from '@playwright/test';
 import { PetApi } from '../src/api/PetApi';
-import { createPetWithHooks, getPetWithHooks } from '../src/hooks/petWithHooks';
+import {
+  createPetWithHooks,
+  deletePetWithHooks,
+  getPetWithHooks,
+} from '../src/hooks/petWithHooks';
 import type { Pet } from '../src/types/pet';
 
 test.describe('Pet API — AOM, SDD y hooks', () => {
@@ -17,7 +21,7 @@ test.describe('Pet API — AOM, SDD y hooks', () => {
     const body = JSON.parse(fs.readFileSync(jsonPath, 'utf-8')) as Pet;
 
     const petApi = new PetApi(request);
-    const hookCtx = { request, testData: { ...body } as Record<string, unknown> };
+    const hookCtx = { request, testData: { ...body } as Record<string, unknown>, testInfo };
 
     const { status, pet, idForPath } = await createPetWithHooks(petApi, hookCtx, body, baseUrl);
     expect(status).toBe(200);
@@ -30,8 +34,8 @@ test.describe('Pet API — AOM, SDD y hooks', () => {
     expect(fetched.name).toBe(body.name);
 
     await test.step('postcondición: limpiar estado', async () => {
-      const del = await petApi.deleteById(idForPath);
-      expect([200, 404]).toContain(del.status());
+      const { status: delStatus } = await deletePetWithHooks(petApi, hookCtx, idForPath, baseUrl);
+      expect([200, 404]).toContain(delStatus);
     });
   });
 });

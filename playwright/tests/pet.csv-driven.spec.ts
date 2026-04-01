@@ -2,7 +2,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { test, expect } from '@playwright/test';
 import { PetApi } from '../src/api/PetApi';
-import { createPetWithHooks, getPetWithHooks } from '../src/hooks/petWithHooks';
+import {
+  createPetWithHooks,
+  deletePetWithHooks,
+  getPetWithHooks,
+} from '../src/hooks/petWithHooks';
 import { parseCsvTable } from '../src/utils/csvFixtures';
 import type { Pet } from '../src/types/pet';
 
@@ -33,7 +37,7 @@ test.describe('Pet API — data-driven (CSV)', () => {
       };
 
       const petApi = new PetApi(request);
-      const hookCtx = { request, testData: { ...row } as Record<string, unknown> };
+      const hookCtx = { request, testData: { ...row } as Record<string, unknown>, testInfo };
 
       const { status: httpStatus, pet, idForPath } = await createPetWithHooks(
         petApi,
@@ -49,7 +53,7 @@ test.describe('Pet API — data-driven (CSV)', () => {
       expect(read.status).toBe(200);
 
       await test.step('postcondición: limpiar', async () => {
-        await petApi.deleteById(idForPath);
+        await deletePetWithHooks(petApi, hookCtx, idForPath, baseUrl);
       });
     });
   }
