@@ -29,6 +29,9 @@ Push-Location (Join-Path $root "karate")
 try {
   & .\mvnw.cmd -B -Dtest=KarateRunner test
   if ($LASTEXITCODE -ne 0) { throw "Karate falló con código $LASTEXITCODE" }
+  $karateReport = Join-Path $root "karate\target\karate-reports\com.demo.pet.pet-regression.html"
+  Write-Host "Reporte Karate (abre en el navegador): $karateReport" -ForegroundColor Yellow
+  Write-Host "  O ejecuta: .\scripts\open-karate-report.ps1" -ForegroundColor Yellow
 } finally { Pop-Location }
 
 Write-Host "`n=== Playwright (solo dentro de /playwright; usa @playwright/test del proyecto) ===" -ForegroundColor Cyan
@@ -46,6 +49,7 @@ try {
   # Script del package.json = CLI del @playwright/test de este repo (no uses solo `npx playwright` fuera de /playwright).
   npm run test
   if ($LASTEXITCODE -ne 0) { throw "Playwright falló con código $LASTEXITCODE" }
+  Write-Host "Reporte Playwright: npm run report (desde la carpeta playwright)" -ForegroundColor Yellow
 } finally { Pop-Location }
 
 Write-Host "`n=== Listo: Karate + Playwright OK ===" -ForegroundColor Green

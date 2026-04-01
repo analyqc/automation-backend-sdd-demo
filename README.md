@@ -74,6 +74,26 @@ npm run test
 
 No ejecutes `npm install` solo en la raíz `demo` (ahí no hay `package.json`). No uses `npx playwright` **desde la raíz** sin haber entrado en `playwright`: puede instalarse otra versión y fallar con `test.describe()`.
 
+## Reportes (después de ejecutar tests)
+
+**Karate (HTML):** tras `mvnw` en `karate/`, abre en el explorador:
+
+`karate\target\karate-reports\com.demo.pet.pet-regression.html`
+
+O desde la raíz `demo`:
+
+```powershell
+.\scripts\open-karate-report.ps1
+```
+
+**Playwright (HTML):** en carpeta `playwright`:
+
+```powershell
+npm run report
+```
+
+JUnit para CI: `karate/target/surefire-reports/`, `playwright/results/e2e-junit.xml`.
+
 Variables opcionales: `API_BASE_URL`, `DEBUG_API=1` (logs en hooks).
 
 ## Documentación

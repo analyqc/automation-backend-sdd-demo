@@ -21,16 +21,17 @@ Feature: Regresión Pet API (SDD + esquema + hooks)
     * call read('classpath:com/demo/hooks/after-request.feature')
 
   @regression
-  Scenario: GET /pet/{id} — POST con plantilla de precondición, luego lectura y limpieza explícita
+  Scenario: GET /pet/{id} — POST con id estable (evita pérdida de precisión con ids 64-bit del servidor)
     * def httpMethod = 'post'
     * def pathSuffix = 'pet'
-    * def payloadPath = 'classpath:testdata/pet-available.json'
+    * def payloadPath = 'classpath:testdata/pet-stable-id.json'
     * call read('classpath:com/demo/hooks/request-with-hooks.feature')
+    * match response contains { id: 798234561, name: 'Karate-Demo-Pet', status: 'available' }
     * def createdId = response.id
     * path 'pet', createdId
     * method get
     * status 200
-    * match response contains { name: 'Karate-Demo-Pet', status: 'available' }
+    * match response contains { id: 798234561, name: 'Karate-Demo-Pet', status: 'available' }
     * match response.photoUrls == '#array'
     * call read('classpath:com/demo/hooks/delete-pet.feature') { petId: createdId }
 
