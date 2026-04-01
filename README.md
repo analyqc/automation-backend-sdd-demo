@@ -40,23 +40,39 @@ Pasos en orden (estilo “compañero de trabajo”): `docs/INSTALACION_PASO_A_PA
 
 ## Ejecución local
 
-**Karate** (JDK 17+; **no** hace falta Maven instalado, se usa el wrapper del repo):
+**Importante:** En los ejemplos, `...` era solo un atajo de explicación. En PowerShell debes usar la **ruta completa** o entrar primero a la carpeta `demo`. No existe una carpeta llamada literalmente `...`.
+
+### Todo en uno (recomendado, Windows)
+
+Desde la carpeta del repo (`demo`, donde está `README.md`):
 
 ```powershell
-cd karate
+.\scripts\run-local-tests.ps1
+```
+
+Ese script ejecuta Karate y luego Playwright con las rutas correctas y evita mezclar el paquete global `playwright` con `@playwright/test` del proyecto.
+
+### Paso a paso manual
+
+**Karate** (JDK 17+; Maven Wrapper en `karate/`):
+
+```powershell
+cd "C:\Users\AnalyQuesquen\OneDrive - In Motion S.A\Documentos\demo\karate"
 .\mvnw.cmd -Dtest=KarateRunner test
 ```
 
 En Linux/macOS: `chmod +x mvnw && ./mvnw -Dtest=KarateRunner test`.
 
-**Playwright**:
+**Playwright** (siempre dentro de `playwright/`, donde está `package.json`):
 
-```bash
-cd playwright
+```powershell
+cd "C:\Users\AnalyQuesquen\OneDrive - In Motion S.A\Documentos\demo\playwright"
 npm ci
-npx playwright install
-npx playwright test
+npm exec -- playwright install chromium
+npm run test
 ```
+
+No ejecutes `npm install` solo en la raíz `demo` (ahí no hay `package.json`). No uses `npx playwright` **desde la raíz** sin haber entrado en `playwright`: puede instalarse otra versión y fallar con `test.describe()`.
 
 Variables opcionales: `API_BASE_URL`, `DEBUG_API=1` (logs en hooks).
 
