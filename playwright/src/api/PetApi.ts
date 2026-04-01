@@ -10,7 +10,7 @@ export class PetApi {
 
   async create(body: Pet): Promise<APIResponse> {
     return this.request.post('pet', { data: body });
-  }
+  } 
 
   async getById(petId: string | number): Promise<APIResponse> {
     return this.request.get(`pet/${petId}`);

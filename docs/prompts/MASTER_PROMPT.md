@@ -69,3 +69,16 @@ Genera primero una **tabla de trazabilidad** (ID de caso | tipo | herramienta | 
 
 - Karate: escenario happy path + uno negativo (status inválido si aplica validación).
 - Playwright: test que crea pet con JSON desde `testdata/pet.available.json` y en `afterEach` borra por `id` si la API lo permite.
+
+---
+
+## Rutas de archivos (salida del agente / LLM)
+
+| Artefacto | Ruta sugerida |
+|-----------|----------------|
+| Casos Karate | `karate/src/test/resources/com/demo/<contexto>/<nombre>.feature` |
+| Datos JSON Karate | `karate/src/test/resources/testdata/<nombre>.json` |
+| Esquemas JSON | `karate/src/test/resources/schemas/<recurso>.schema.json` |
+| Tests Playwright | `playwright/tests/<recurso>.<tipo>.spec.ts` |
+| API Objects | `playwright/src/api/<Recurso>Api.ts` |
+| Tipos desde OpenAPI | `playwright/src/types/<recurso>.ts` (manual o generado) |

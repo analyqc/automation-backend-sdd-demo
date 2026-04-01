@@ -51,9 +51,10 @@ export async function getPetWithHooks(
     responseStatus: status,
     responseBody: responseText,
   });
+  const { pet } = parsePetResponseBody(responseText);
   return {
     status,
-    json: () => Promise.resolve(JSON.parse(responseText) as Pet),
+    json: () => Promise.resolve(pet),
   };
 }
 

@@ -1,4 +1,3 @@
-import type { APIResponse } from '@playwright/test';
 import type { Pet } from '../types/pet';
 
 /**
@@ -14,8 +13,4 @@ export function parsePetResponseBody(text: string): { pet: Pet; idForPath: strin
   }
   if (!idForPath && pet.id != null) idForPath = String(pet.id);
   return { pet, idForPath };
-}
-
-export async function readPetFromResponse(res: APIResponse): Promise<{ pet: Pet; idForPath: string }> {
-  return parsePetResponseBody(await res.text());
 }
