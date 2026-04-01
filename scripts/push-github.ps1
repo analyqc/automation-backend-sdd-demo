@@ -1,26 +1,22 @@
 # Uso (PowerShell, desde la raíz del repo demo):
-#   $env:GITHUB_TOKEN = "tu_pat_aqui"   # NO lo pegues en el código; solo en la sesión
+#   $env:GITHUB_TOKEN = "tu_pat_aqui"
 #   .\scripts\push-github.ps1 -RepoName "nombre-del-repo-en-github"
 #
-# Si Windows bloquea scripts: Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-# O una sola vez: powershell -ExecutionPolicy Bypass -File .\scripts\push-github.ps1 -RepoName "..."
+# Si sigue 403, fuerza borrar credenciales guardadas de github.com y reintenta:
+#   .\scripts\push-github.ps1 -RepoName "..." -ClearGithubCredentials
 #
-# Requisitos del token:
-#   - PAT classic: scope "repo" (marca el checkbox completo).
-#   - PAT fine-grained: acceso al repo + permiso "Contents" Read and write.
-# Si ves 403: Git Credential Manager puede estar usando una clave vieja. Panel de Windows
-#   > Administrador de credenciales > Credenciales de Windows > quita entradas "git:https://github.com".
-# URL de push: usuario "x-access-token" (recomendado por GitHub para PAT).
+# PAT classic: marca el scope "repo" (o para repo público al menos "public_repo").
+# PAT fine-grained: repositorio seleccionado + Contents Read and write.
 
 param(
   [Parameter(Mandatory = $true)]
   [string] $RepoName,
-  [string] $GitHubUser = "analyqc"
+  [string] $GitHubUser = "analyqc",
+  [switch] $ClearGithubCredentials
 )
 
 $ErrorActionPreference = "Stop"
 
-# Terminales de Cursor/VS Code a veces no heredan el PATH completo de Windows (Git "no reconocido").
 $machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
 if ($machinePath) { $env:Path = "$machinePath;$env:Path" }
@@ -47,21 +43,50 @@ if (-not (Test-Path (Join-Path $root ".git"))) {
   Write-Error "No se encontró .git en $root"
 }
 
+# Comprueba token (PAT classic devuelve cabecera X-OAuth-Scopes; fine-grained a veces no).
+try {
+  $wr = Invoke-WebRequest -UseBasicParsing -Uri "https://api.github.com/user" -Headers @{
+    Authorization  = "Bearer $token"
+    Accept         = "application/vnd.github+json"
+    "User-Agent"   = "push-github-script"
+  }
+  $scopes = $wr.Headers["X-OAuth-Scopes"]
+  if ($scopes) {
+    Write-Host "GitHub API: token OK. Scopes del PAT (classic): $scopes"
+    if ($scopes -notmatch "\brepo\b" -and $scopes -notmatch "\bpublic_repo\b") {
+      Write-Warning "No aparece 'repo' ni 'public_repo'. Para hacer push necesitas un PAT classic con 'repo' (recomendado) o 'public_repo' si el repo es solo público."
+    }
+  } else {
+    Write-Host "GitHub API: token OK (posible PAT fine-grained; asegúrate de Contents Read/Write en este repo)."
+  }
+} catch {
+  Write-Warning "No se pudo validar el token en api.github.com/user. ¿Token copiado completo? Error: $($_.Exception.Message)"
+}
+
+if ($ClearGithubCredentials) {
+  Write-Host "Quitando credenciales guardadas para github.com..."
+  $cred = "protocol=https`nhost=github.com`n"
+  $cred | & git credential reject 2>$null
+  $cred | & git credential-manager erase 2>$null
+  $cred | & git credential-manager-core erase 2>$null
+}
+
 Push-Location $root
 try {
   git remote remove origin 2>$null
   git remote add origin "https://github.com/${GitHubUser}/${RepoName}.git"
-  # Evita que el Administrador de credenciales ignore el PAT de la URL y mande otra cuenta.
-  $enc = [Uri]::EscapeDataString($token)
-  $pushUrl = "https://x-access-token:${enc}@github.com/${GitHubUser}/${RepoName}.git"
+  # Sin EscapeDataString: algunos PAT fallan si se codifican mal. Concatenar evita que PowerShell interprete $ dentro del token.
+  $pushUrl = "https://x-access-token:" + $token + "@github.com/${GitHubUser}/${RepoName}.git"
   $gitArgs = @("-c", "credential.helper=", "push", "-u", $pushUrl, "main")
   & git @gitArgs
   if ($LASTEXITCODE -ne 0) {
     Write-Error @"
-Push falló (código $LASTEXITCODE). Comprueba:
-  1) PAT classic con scope 'repo' completo, o fine-grained con Contents Read/Write en este repo.
-  2) Panel de control > Cuentas de usuario > Administrador de credenciales > Credenciales de Windows: elimina 'git:https://github.com' y vuelve a ejecutar el script.
-  3) https://github.com/settings/tokens
+Push falló (código $LASTEXITCODE).
+
+1) PAT classic nuevo: https://github.com/settings/tokens → Generate (classic) → marca "repo".
+2) Repo público: como mínimo marca "public_repo" si no quieres marcar todo "repo".
+3) Ejecuta de nuevo con: .\scripts\push-github.ps1 -RepoName "$RepoName" -ClearGithubCredentials
+4) Panel de control → Administrador de credenciales → borra entradas git:https://github.com
 "@
   }
   git remote set-url origin "https://github.com/${GitHubUser}/${RepoName}.git"
