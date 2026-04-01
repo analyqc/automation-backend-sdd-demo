@@ -122,6 +122,23 @@ git push -u origin main
 
 **Tarea 5 ✓** cuando veas el código en la web de GitHub.
 
+### Token (PAT) y permisos
+
+- Si quieres **crear el repo por API** o hacer **push por HTTPS**, el PAT **classic** debe incluir el scope **`repo`**.
+- **No** pegues el token en el chat ni lo subas al repositorio. Úsalo solo en tu máquina.
+
+### Script incluido en el proyecto
+
+Con el repo **ya creado** en GitHub (vacío, mismo nombre que el remoto):
+
+```powershell
+cd "C:\Users\AnalyQuesquen\OneDrive - In Motion S.A\Documentos\demo"
+$env:GITHUB_TOKEN = "tu_pat_con_scope_repo"
+.\scripts\push-github.ps1 -RepoName "automation-backend-sdd-demo"
+```
+
+El remoto `origin` del proyecto apunta por defecto a `https://github.com/analyqc/automation-backend-sdd-demo.git`; cambia `-RepoName` si usas otro nombre.
+
 ---
 
 ## Resumen de comandos útiles
