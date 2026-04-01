@@ -145,6 +145,8 @@ Cierra y vuelve a abrir PowerShell, luego ejecuta el script.
 powershell -ExecutionPolicy Bypass -File .\scripts\push-github.ps1 -RepoName "automation-backend-sdd-demo"
 ```
 
+Si en la terminal de **Cursor** sale *«git no se reconoce»*, cierra y abre Cursor tras instalar Git, o ejecuta el script igualmente: `push-github.ps1` ya intenta cargar el PATH de Windows y la ruta típica de Git.
+
 Con el repo **ya creado** en GitHub (vacío, mismo nombre que el remoto):
 
 ```powershell

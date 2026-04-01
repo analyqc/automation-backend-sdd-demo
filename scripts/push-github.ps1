@@ -16,6 +16,24 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+# Terminales de Cursor/VS Code a veces no heredan el PATH completo de Windows (Git "no reconocido").
+$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($machinePath) { $env:Path = "$machinePath;$env:Path" }
+if ($userPath) { $env:Path = "$userPath;$env:Path" }
+foreach ($dir in @(
+    (Join-Path $env:ProgramFiles "Git\cmd"),
+    (Join-Path $env:ProgramFiles "Git\bin")
+  )) {
+  if ($dir -and (Test-Path (Join-Path $dir "git.exe"))) {
+    $env:Path = "$dir;$env:Path"
+  }
+}
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+  Write-Error "No se encuentra 'git'. Instala Git desde https://git-scm.com/download/win, reinicia Cursor y vuelve a intentar."
+}
+
 $token = $env:GITHUB_TOKEN
 if (-not $token) {
   Write-Error "Define GITHUB_TOKEN en esta sesión (Personal Access Token con scope 'repo')."
