@@ -3,6 +3,8 @@ target/
 playwright/playwright-report/
 playwright/results/
 playwright/test-results/
+/test-results/
+/package-lock.json
 *.log
 .DS_Store
 .env
