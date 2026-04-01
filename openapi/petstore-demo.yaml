@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Pet Store API (demo subset)
+  description: Subconjunto alineado a la API pública de demostración para SDD y automatización.
+  version: 1.0.0
+servers:
+  - url: https://petstore.swagger.io/v2
+    description: Servidor público de demostración
+tags:
+  - name: pet
+    description: Operaciones sobre mascotas
+paths:
+  /pet:
+    post:
+      operationId: addPet
+      tags: [pet]
+      summary: Crear mascota
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: Mascota creada o actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+    put:
+      operationId: updatePet
+      tags: [pet]
+      summary: Actualizar mascota existente
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: ID inválido
+        '404':
+          description: Mascota no encontrada
+  /pet/{petId}:
+    get:
+      operationId: getPetById
+      tags: [pet]
+      summary: Obtener mascota por ID
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: ID inválido
+        '404':
+          description: No encontrado
+    delete:
+      operationId: deletePet
+      tags: [pet]
+      summary: Eliminar mascota
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+        '400':
+          description: ID inválido
+components:
+  schemas:
+    Pet:
+      type: object
+      required: [name, photoUrls]
+      properties:
+        id:
+          type: integer
+          format: int64
+        category:
+          $ref: '#/components/schemas/Category'
+        name:
+          type: string
+          example: Doggie
+        photoUrls:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        status:
+          type: string
+          description: Estado en inventario
+          enum: [available, pending, sold]
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string

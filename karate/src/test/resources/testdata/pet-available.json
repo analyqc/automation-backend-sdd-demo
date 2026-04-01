@@ -1,0 +1,6 @@
+{
+  "name": "Karate-Demo-Pet",
+  "photoUrls": ["https://example.com/photo.png"],
+  "status": "available",
+  "tags": [{ "name": "demo" }]
+}

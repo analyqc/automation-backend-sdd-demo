@@ -1,0 +1,6 @@
+{
+  "name": "Playwright-Demo-Pet",
+  "photoUrls": ["https://example.com/paw.png"],
+  "status": "available",
+  "tags": [{ "name": "playwright-demo" }]
+}

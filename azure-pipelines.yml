@@ -1,0 +1,80 @@
+# Pipeline híbrido: Karate (JUnit) + Playwright (JUnit XML) → Test Results consolidados en Azure DevOps
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+variables:
+  NODE_VERSION: '20.x'
+  JAVA_VERSION: '17'
+  API_BASE_URL: 'https://petstore.swagger.io/v2/'
+
+stages:
+  - stage: Test
+    displayName: API Regression (Karate + Playwright)
+    jobs:
+      - job: HybridAPI
+        displayName: Run Karate and Playwright
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - task: JavaToolInstaller@0
+            displayName: Use Java $(JAVA_VERSION)
+            inputs:
+              versionSpec: $(JAVA_VERSION)
+              jdkArchitectureOption: x64
+              jdkSourceOption: PreInstalled
+
+          - task: NodeTool@0
+            displayName: Use Node $(NODE_VERSION)
+            inputs:
+              versionSpec: $(NODE_VERSION)
+
+          - script: |
+              cd karate
+              chmod +x mvnw
+              ./mvnw -B -q -Dtest=KarateRunner test
+            displayName: Karate (Maven Wrapper)
+            continueOnError: true
+
+          - script: |
+              cd playwright
+              npm install
+              npx playwright install --with-deps
+              export API_BASE_URL="$(API_BASE_URL)"
+              npx playwright test
+            displayName: Playwright API tests
+            continueOnError: true
+
+          - task: PublishTestResults@2
+            displayName: Publish consolidated test results (JUnit)
+            inputs:
+              testResultsFormat: JUnit
+              testResultsFiles: |
+                **/surefire-reports/TEST-*.xml
+                **/failsafe-reports/TEST-*.xml
+                playwright/results/*.xml
+              searchFolder: $(System.DefaultWorkingDirectory)
+              mergeTestResults: true
+              failTaskOnFailedTests: true
+              testRunTitle: 'Hybrid API — Karate + Playwright'
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Playwright HTML report (optional)
+            condition: always()
+            continueOnError: true
+            inputs:
+              targetPath: 'playwright/playwright-report'
+              artifact: playwright-html-report
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Karate reports (optional)
+            condition: always()
+            continueOnError: true
+            inputs:
+              targetPath: 'karate/target/karate-reports'
+              artifact: karate-reports
