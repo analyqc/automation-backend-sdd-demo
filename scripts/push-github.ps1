@@ -64,11 +64,14 @@ try {
 }
 
 if ($ClearGithubCredentials) {
-  Write-Host "Quitando credenciales guardadas para github.com..."
+  Write-Host "Quitando credenciales guardadas para github.com (git credential reject)..."
   $cred = "protocol=https`nhost=github.com`n"
-  $cred | & git credential reject 2>$null
-  $cred | & git credential-manager erase 2>$null
-  $cred | & git credential-manager-core erase 2>$null
+  # Solo el helper estándar de Git; "git credential-manager-core" no existe en todas las versiones de Git for Windows.
+  $prevEap = $ErrorActionPreference
+  $ErrorActionPreference = "SilentlyContinue"
+  $null = $cred | & git credential reject 2>&1
+  $ErrorActionPreference = $prevEap
+  Write-Host "Si el push sigue en 403, borra a mano en Panel de control > Administrador de credenciales las entradas de github.com"
 }
 
 Push-Location $root
