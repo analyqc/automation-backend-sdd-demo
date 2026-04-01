@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
+    "test:csv": "playwright test pet.csv-driven.spec.ts",
     "test:headed": "playwright test --headed",
     "report": "playwright show-report"
   },

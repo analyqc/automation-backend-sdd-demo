@@ -102,6 +102,7 @@ Variables opcionales: `API_BASE_URL`, `DEBUG_API=1` (logs en hooks).
 - Prompt maestro para LLM: `docs/prompts/MASTER_PROMPT.md`
 - ChatOps / Teams: `docs/CHATOPS_TEAMS.md`
 - Lineamientos OpenAPI para arquitectura: `docs/OPENAPI_GUIDELINES.md`
+- Flujo CSV + Teams + reporte (diagrama de equipo): `docs/FLUJO_EQUIPO_CSV_TEAMS.md`
 
 ## Azure DevOps
 

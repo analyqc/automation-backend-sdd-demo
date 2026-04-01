@@ -50,3 +50,7 @@ sequenceDiagram
 ## Mensaje de ejemplo al usuario
 
 Tras encolar el build, el bot responde con tarjeta adaptativa: estado, enlace al run, y enlace directo a **Pipelines → Run → Tests** (pestaña integrada con `PublishTestResults`).
+
+## Cerrar el ciclo: reporte de vuelta al chat
+
+Flujo CSV + reporte Playwright + webhook a Teams: ver **`docs/FLUJO_EQUIPO_CSV_TEAMS.md`** (diagrama alineado a “solicitud en Teams → pipeline → reporte → respuesta al canal”).

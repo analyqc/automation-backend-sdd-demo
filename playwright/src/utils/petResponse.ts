@@ -7,8 +7,13 @@ import type { Pet } from '../types/pet';
  */
 export async function readPetFromResponse(res: APIResponse): Promise<{ pet: Pet; idForPath: string }> {
   const text = await res.text();
-  const idMatch = text.match(/"id"\s*:\s*(\d+)/);
   const pet = JSON.parse(text) as Pet;
-  const idForPath = idMatch?.[1] ?? (pet.id != null ? String(pet.id) : '');
+  // No usar el primer "id": puede ser category.id o tag.id (0). El id de Pet en Petstore es el número más largo.
+  let idForPath = '';
+  for (const m of text.matchAll(/"id"\s*:\s*(\d+)/g)) {
+    const candidate = m[1];
+    if (candidate.length > idForPath.length) idForPath = candidate;
+  }
+  if (!idForPath && pet.id != null) idForPath = String(pet.id);
   return { pet, idForPath };
 }

@@ -9,6 +9,8 @@ variables:
   NODE_VERSION: '20.x'
   JAVA_VERSION: '17'
   API_BASE_URL: 'https://petstore.swagger.io/v2/'
+  # Vacío = todos los tests. Ej. desde Teams: "fila CSV" para solo casos del CSV (título del test).
+  PLAYWRIGHT_GREP: ''
 
 stages:
   - stage: Test
@@ -46,7 +48,11 @@ stages:
               npm install
               npx playwright install --with-deps
               export API_BASE_URL="$(API_BASE_URL)"
-              npx playwright test
+              if [ -n "$(PLAYWRIGHT_GREP)" ]; then
+                npx playwright test --grep "$(PLAYWRIGHT_GREP)"
+              else
+                npx playwright test
+              fi
             displayName: Playwright API tests
             continueOnError: true
 
