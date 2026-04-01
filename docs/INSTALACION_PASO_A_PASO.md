@@ -129,6 +129,22 @@ git push -u origin main
 
 ### Script incluido en el proyecto
 
+Si aparece *«la ejecución de scripts está deshabilitada»*, elige **una** opción:
+
+**A — Recomendado (solo tu usuario, una vez):**
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+Cierra y vuelve a abrir PowerShell, luego ejecuta el script.
+
+**B — Solo esta vez (sin cambiar la política):**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\push-github.ps1 -RepoName "automation-backend-sdd-demo"
+```
+
 Con el repo **ya creado** en GitHub (vacío, mismo nombre que el remoto):
 
 ```powershell
