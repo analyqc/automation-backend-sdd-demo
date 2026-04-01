@@ -147,6 +147,8 @@ powershell -ExecutionPolicy Bypass -File .\scripts\push-github.ps1 -RepoName "au
 
 Si en la terminal de **Cursor** sale *«git no se reconoce»*, cierra y abre Cursor tras instalar Git, o ejecuta el script igualmente: `push-github.ps1` ya intenta cargar el PATH de Windows y la ruta típica de Git.
 
+Si el push devuelve **403** o *Permission denied*: el **Administrador de credenciales de Windows** puede estar guardando otra contraseña para `github.com`. Ve a **Panel de control → Cuentas de usuario → Administrador de credenciales → Credenciales de Windows** y elimina las entradas que digan `git:https://github.com`. Luego vuelve a ejecutar el script con un PAT que tenga scope **`repo`** (classic) o **Contents: Read and write** (fine-grained en ese repositorio).
+
 Con el repo **ya creado** en GitHub (vacío, mismo nombre que el remoto):
 
 ```powershell
