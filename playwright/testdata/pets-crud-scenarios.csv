@@ -1,0 +1,7 @@
+# CSV — ciclo CRUD API Petstore (cada fila = un escenario de negocio para dirección)
+# Flujo fijo: CREATE → GET (verificar alta) → UPDATE (PUT; precondición: recurso creado) → GET (verificar cambio) → DELETE (precondición: recurso existe)
+# API pública: https://petstore.swagger.io/v2
+scenarioId,businessCase,petName,statusCreate,statusUpdate
+1,Alta y cambio a pendiente (flujo típico backoffice),Boss-Demo-Alpha,available,pending
+2,Alta y marcar como vendido,Boss-Demo-Beta,available,sold
+3,Registro y actualización inventario,Boss-Demo-Gamma,pending,available

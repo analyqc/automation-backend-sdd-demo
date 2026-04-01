@@ -14,3 +14,14 @@ export function parsePetResponseBody(text: string): { pet: Pet; idForPath: strin
   if (!idForPath && pet.id != null) idForPath = String(pet.id);
   return { pet, idForPath };
 }
+
+/**
+ * Cuerpo JSON para PUT /pet sin perder precisión del `id` (enteros grandes del Petstore).
+ */
+export function buildPetPutJson(idForPath: string, pet: Pet, status: Pet['status']): string {
+  const chunks = [`"id":${idForPath}`, `"name":${JSON.stringify(pet.name)}`, `"photoUrls":${JSON.stringify(pet.photoUrls)}`];
+  if (pet.category != null) chunks.push(`"category":${JSON.stringify(pet.category)}`);
+  chunks.push(`"status":${JSON.stringify(status)}`);
+  if (pet.tags != null) chunks.push(`"tags":${JSON.stringify(pet.tags)}`);
+  return `{${chunks.join(',')}}`;
+}

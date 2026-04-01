@@ -1,7 +1,7 @@
 import type { Pet } from '../types/pet';
 import type { PetApi } from '../api/PetApi';
 import { beforeRequest, afterRequest, type HookContext } from './requestHooks';
-import { parsePetResponseBody } from '../utils/petResponse';
+import { buildPetPutJson, parsePetResponseBody } from '../utils/petResponse';
 import { attachHttpExchange } from '../utils/httpReportAttach';
 
 function joinBase(baseUrl: string, suffix: string): string {
@@ -33,11 +33,39 @@ export async function createPetWithHooks(
   return { status, pet, idForPath };
 }
 
+export async function updatePetWithHooks(
+  petApi: PetApi,
+  requestCtx: HookContext,
+  idForPath: string,
+  pet: Pet,
+  newStatus: Pet['status'],
+  baseUrl: string,
+  attachStepLabel = '03-PUT-pet'
+): Promise<{ status: number; pet: Pet }> {
+  const url = joinBase(baseUrl, 'pet');
+  const putBody = buildPetPutJson(idForPath, pet, newStatus);
+  await beforeRequest(requestCtx, { method: 'PUT', url });
+  const res = await petApi.updateWithJsonBody(putBody);
+  const status = res.status();
+  const responseText = await res.text();
+  await afterRequest(requestCtx, { method: 'PUT', url, status });
+  await attachHttpExchange(requestCtx.testInfo, attachStepLabel, {
+    method: 'PUT',
+    url,
+    requestBody: putBody,
+    responseStatus: status,
+    responseBody: responseText,
+  });
+  const { pet: updated } = parsePetResponseBody(responseText);
+  return { status, pet: updated };
+}
+
 export async function getPetWithHooks(
   petApi: PetApi,
   requestCtx: HookContext,
   petId: string,
-  baseUrl: string
+  baseUrl: string,
+  attachStepLabel = '02-GET-pet'
 ): Promise<{ status: number; json: () => Promise<Pet> }> {
   const url = joinBase(baseUrl, `pet/${petId}`);
   await beforeRequest(requestCtx, { method: 'GET', url });
@@ -45,7 +73,7 @@ export async function getPetWithHooks(
   const status = res.status();
   const responseText = await res.text();
   await afterRequest(requestCtx, { method: 'GET', url, status });
-  await attachHttpExchange(requestCtx.testInfo, '02-GET-pet', {
+  await attachHttpExchange(requestCtx.testInfo, attachStepLabel, {
     method: 'GET',
     url,
     responseStatus: status,
@@ -62,7 +90,8 @@ export async function deletePetWithHooks(
   petApi: PetApi,
   requestCtx: HookContext,
   petId: string,
-  baseUrl: string
+  baseUrl: string,
+  attachStepLabel = '03-DELETE-pet'
 ): Promise<{ status: number }> {
   const url = joinBase(baseUrl, `pet/${petId}`);
   await beforeRequest(requestCtx, { method: 'DELETE', url });
@@ -70,7 +99,7 @@ export async function deletePetWithHooks(
   const status = res.status();
   const responseText = await res.text();
   await afterRequest(requestCtx, { method: 'DELETE', url, status });
-  await attachHttpExchange(requestCtx.testInfo, '03-DELETE-pet', {
+  await attachHttpExchange(requestCtx.testInfo, attachStepLabel, {
     method: 'DELETE',
     url,
     responseStatus: status,

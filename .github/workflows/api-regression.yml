@@ -1,0 +1,97 @@
+# GitHub Actions — alternativa al CI en Azure DevOps (Karate + Playwright)
+name: API regression (Karate + Playwright)
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      playwright_grep:
+        description: 'Filtro opcional Playwright (--grep), vacío = todos'
+        required: false
+        default: ''
+
+env:
+  API_BASE_URL: https://petstore.swagger.io/v2/
+
+jobs:
+  hybrid-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: playwright/package-lock.json
+
+      - name: Karate (Maven Wrapper)
+        id: karate
+        continue-on-error: true
+        working-directory: karate
+        run: chmod +x mvnw && ./mvnw -B -q -Dtest=KarateRunner test
+
+      - name: Playwright install + test
+        id: playwright
+        continue-on-error: true
+        working-directory: playwright
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          if [ -n "${{ github.event.inputs.playwright_grep }}" ]; then
+            npx playwright test --grep "${{ github.event.inputs.playwright_grep }}"
+          else
+            npx playwright test
+          fi
+
+      - name: Upload JUnit (Playwright)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-junit
+          path: playwright/results/*.xml
+          if-no-files-found: ignore
+
+      - name: Upload JUnit (Karate / Surefire)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: karate-surefire
+          path: karate/target/surefire-reports/*.xml
+          if-no-files-found: ignore
+
+      - name: Upload Playwright HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-html-report
+          path: playwright/playwright-report/
+          if-no-files-found: ignore
+
+      - name: Upload Karate HTML reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: karate-html-reports
+          path: karate/target/karate-reports/
+          if-no-files-found: ignore
+
+      - name: Fallar el job si Karate o Playwright fallaron
+        if: always()
+        run: |
+          if [ "${{ steps.karate.outcome }}" != "success" ] || [ "${{ steps.playwright.outcome }}" != "success" ]; then
+            echo "Karate: ${{ steps.karate.outcome }} | Playwright: ${{ steps.playwright.outcome }}"
+            exit 1
+          fi

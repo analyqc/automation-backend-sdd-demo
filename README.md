@@ -96,8 +96,11 @@ JUnit para CI: `karate/target/surefire-reports/`, `playwright/results/e2e-junit.
 
 Variables opcionales: `API_BASE_URL`, `DEBUG_API=1` (logs en hooks).
 
+**Demo dirección — CRUD + CSV + precondiciones:** `playwright/testdata/pets-crud-scenarios.csv` alimenta `pet.crud-csv.spec.ts` (CREATE → GET → UPDATE → DELETE con pasos explícitos de precondición en el reporte). Ejecutar: `cd playwright` → `npm run test:crud-csv`. *Nota:* el Petstore público reutiliza ids de demostración; la aserción fuerte del UPDATE es la respuesta `PUT`.
+
 ## Documentación
 
+- **Implementar CI, Teams y flujo LLM (paso a paso):** `docs/MANUAL_IMPLEMENTACION_RESTANTE.md`
 - Arquitectura y diagramas: `docs/ARCHITECTURE.md`
 - Prompt maestro para LLM: `docs/prompts/MASTER_PROMPT.md`
 - ChatOps / Teams: `docs/CHATOPS_TEAMS.md`

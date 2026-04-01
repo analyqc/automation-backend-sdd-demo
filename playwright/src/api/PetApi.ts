@@ -10,7 +10,12 @@ export class PetApi {
 
   async create(body: Pet): Promise<APIResponse> {
     return this.request.post('pet', { data: body });
-  } 
+  }
+
+  /** PUT /pet — `body` JSON crudo (p. ej. de buildPetPutJson) para ids 64-bit. */
+  async updateWithJsonBody(body: string): Promise<APIResponse> {
+    return this.request.put('pet', { data: body });
+  }
 
   async getById(petId: string | number): Promise<APIResponse> {
     return this.request.get(`pet/${petId}`);
